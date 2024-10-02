@@ -1,0 +1,18 @@
+﻿@model TextEditor.Models.Events
+
+@{
+    ViewData["Title"] = "Cancel";
+}
+
+<h1>Cancel</h1>
+
+<h3>Are you sure you want to cancel this task?</h3>
+<div>
+    <hr />
+   
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Confirm" class="btn btn-danger" /> 
+        <a class="btn btn-outline-primary" asp-action="Index">Back to tasks</a>
+    </form>
+</div>
