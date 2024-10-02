@@ -1,4 +1,4 @@
-<h1>Simply storage and task management web app</h1>
+<h1>Simplify storage and task management web app</h1>
 
  ### [YouTube Demonstration](https://youtu.be/fG_qxCus7Co)
 
