@@ -3,7 +3,7 @@
  ### [YouTube Demonstration](https://youtu.be/fG_qxCus7Co)
 
 <h2>Description</h2>
-🚀 Storage & Task Manager App Built with ASP.NET Core MVC and MS SQL Server. 
+🚀 Storage & Task Manager App Built with ASP.NET Core MVC, HTML, CSS, JavaScript and MS SQL Server. 
 <br />
 <br />Features: 
 <br />👤 Secure logins 
