@@ -1,0 +1,26 @@
+﻿@model IEnumerable<TextEditor.Models.Doc>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Documents</h1>
+
+<p>
+    <a class="btn btn-outline-info" asp-action="Create">Create new document</a>
+</p>
+<hr />
+<br />
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-2">
+            
+            <div class="col-2 d-flex justify-content-center align-items-center mb-2" style="height:200px">
+                <a asp-action="Edit" asp-route-id="@item.Id"><img src="https://cdn-icons-png.freepik.com/512/6747/6747196.png" height="200" width="200" /></a>
+            </div>
+            <span>@item.Title</span>
+        </div>
+       
+    }
+</div>

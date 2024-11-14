@@ -1,0 +1,46 @@
+﻿@model TextEditor.Models.Doc
+@using Microsoft.AspNetCore.Identity;
+@inject UserManager<IdentityUser> userManager;
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Document</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group mb-3">
+                <input asp-for="Title" class="form-control" placeholder="Untitled document" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <textarea id="tiny" asp-for="Content"></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <input type="hidden" asp-for="UserId" class="form-control" value="@userManager.GetUserId(User)" />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+                <a class="btn btn-outline-info" asp-action="Index">Back to list</a>
+            </div>
+            @* <div>
+                <a class="btn btn-danger mb-3" asp-action="Delete" asp-route-id="@Model.Id">Delete</a>
+            </div> *@
+        </form>
+    </div>
+</div>
+
+@* <div>
+    <a class="btn btn-outline-info" asp-action="Index">Back to List</a>
+</div> *@
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

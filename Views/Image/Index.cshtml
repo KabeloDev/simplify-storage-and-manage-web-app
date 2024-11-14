@@ -1,0 +1,40 @@
+﻿@model IEnumerable<TextEditor.Models.Image>
+
+<h2>Your Uploaded Images</h2>
+
+<form method="post" enctype="multipart/form-data" class="mt-4 mb-4">
+    <div class="form-group">
+        <label for="file">Upload Image</label>
+        <input type="file" name="file" class="form-control" id="fileInput" accept="image/*" />
+    </div>
+    <button type="submit" class="btn btn-outline-primary mt-2" id="uploadBtn" disabled>Upload</button>
+</form>
+
+<div class="row">
+    @foreach (var image in Model)
+    {
+        <div class="col-md-3 mb-4">
+            <div >
+                <img src="~/uploads/@image.FileName" height="220" width="300" class="mb-2">
+                <div class="d-flex justify-content-evenly">
+                    <a class="btn btn-primary btn-sm" asp-action="DownloadImage" asp-route-id="@image.Id">Download</a>
+                    <a class="btn btn-danger btn-sm" asp-action="DeleteImage" asp-route-id="@image.Id">Delete</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    // JavaScript to enable/disable the Upload button based on file selection
+    document.getElementById('fileInput').addEventListener('change', function () {
+        const uploadBtn = document.getElementById('uploadBtn');
+        if (this.files.length > 0 && this.files[0].type.startsWith('image/')) {
+            // Enable the button if a file is selected and is an image
+            uploadBtn.disabled = false;
+        } else {
+            // Disable the button if no file is selected or the file is not an image
+            uploadBtn.disabled = true;
+        }
+    });
+</script>

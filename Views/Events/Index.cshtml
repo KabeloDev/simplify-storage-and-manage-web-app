@@ -1,0 +1,184 @@
+﻿@model IEnumerable<TextEditor.Models.Events>
+
+@{
+    ViewData["Title"] = "Index";
+    var eventsJson = System.Text.Json.JsonSerializer.Serialize(Model.Select(e => new
+    {
+        id = e.Id,  // Include the event ID for linking to details
+        title = e.Name,  // Just the event name for the title
+        start = e.StartTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+        end = e.EndTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+        description = e.Description,
+        location = e.Location,
+        isComplete = e.IsComplete // Include completion status
+    }));
+
+    var totalTasks = Model.Count();
+    var completedTasks = Model.Count(e => e.IsComplete);
+    var incompleteTasks = totalTasks - completedTasks;
+
+    // Overdue tasks: Tasks whose end date is before today and are not marked as complete
+    var overdueTasks = Model.Where(e => e.EndTime < DateTime.Now && !e.IsComplete).ToList();
+}
+
+<p>
+    <a class="btn btn-outline-primary" asp-action="Create">Add new task</a>
+</p>
+
+<!-- Display calendar -->
+<div class="row">
+    <div class="col-md-12">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- Display pie chart and bar chart below the calendar -->
+<div class="row mt-4">
+    <!-- Column for Pie Chart -->
+    <div class="col-md-6 text-center">
+        <canvas id="taskPieChart" width="150" height="150"></canvas>
+    </div>
+
+    <!-- Column for Bar Chart -->
+    <div class="col-md-6 text-center">
+        <canvas id="taskBarChart" width="400" height="400"></canvas>
+    </div>
+</div>
+
+<!-- Overdue tasks section with enhanced table design -->
+<div class="row mt-5">
+    <div class="col-md-12">
+        <h3>Overdue Tasks</h3>
+        @if (overdueTasks.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Task Name</th>
+                            <th>Description</th>
+                            <th>Due Date</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var task in overdueTasks)
+                        {
+                            <tr>
+                                <td><strong>@task.Name</strong></td>
+                                <td>@task.Description</td>
+                                <td>
+                                    <div>@task.EndTime.ToString("yyyy-MM-dd")</div>
+                                    <small class="text-muted">@task.EndTime.ToString("hh:mm tt")</small>
+                                </td>
+                                <td class="text-center">
+                                    <a class="btn btn-primary btn-sm" asp-action="Edit" asp-route-id="@task.Id" title="Edit Task">
+                                        <i class="fa fa-pencil-alt"></i> Edit
+                                    </a>
+                                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@task.Id" title="Cancel Task">
+                                        <i class="fa fa-times"></i> Cancel
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">No overdue tasks.</p>
+        }
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+
+        // Get events from the model serialized as JSON
+        var events = @Html.Raw(eventsJson);
+
+        // Initialize FullCalendar with events
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events: events, // Add the events here
+            eventContent: function (arg) {
+                // Customize event display: name with start/end time
+                var start = new Date(arg.event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                var end = arg.event.end ? new Date(arg.event.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                var timeDisplay = start + (end ? ' - ' + end : '');
+
+                // Determine dot color based on completion status
+                var dotColor = arg.event.extendedProps.isComplete ? 'green' : 'yellow';
+                var dotHtml = `<span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${dotColor}; margin-right: 5px;"></span>`;
+
+                return { html: dotHtml + '<b>' + arg.event.title /* + '</b><br>' + timeDisplay */ };
+            },
+            eventClick: function (info) {
+                // When event is clicked, redirect to the details page
+                var eventId = info.event.id;
+                window.location.href = '@Url.Action("Details", "Events")/' + eventId;
+                info.jsEvent.preventDefault(); // Prevent default behavior (e.g. showing event details popup)
+            }
+        });
+
+        calendar.render();
+
+        // Pie chart data
+        var ctxPie = document.getElementById('taskPieChart').getContext('2d');
+        var completedTasks = @completedTasks;
+        var incompleteTasks = @incompleteTasks;
+
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: ['Completed Tasks', 'Incomplete Tasks'],
+                datasets: [{
+                    data: [completedTasks, incompleteTasks],
+                    backgroundColor: ['#28a745', '#ffc107'], // Green for complete, Yellow for incomplete
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // Bar chart data
+        var ctxBar = document.getElementById('taskBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Completed Tasks', 'Incomplete Tasks'],
+                datasets: [{
+                    label: 'Task Count',
+                    data: [completedTasks, incompleteTasks],
+                    backgroundColor: ['#28a745', '#ffc107'],
+                    borderColor: ['#28a745', '#ffc107'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+</script>
